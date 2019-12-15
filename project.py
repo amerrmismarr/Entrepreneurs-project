@@ -151,7 +151,7 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
-# JSON APIs 
+# JSON APIs
 @app.route('/century/<int:century_id>/list/JSON')
 def CenturiessJSON(century_id):
     century = session.query(Century).filter_by(id=century_id).one()
