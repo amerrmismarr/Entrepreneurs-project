@@ -17,8 +17,11 @@ Git - An open source version control system
 **How to Run**
 
 1.Install VirtualBox and Vagrant
+
 2.Clone this repository
+
 3.Unzip and place the Item Catalogue Project folder in your vagrant directory
+
 4.Launch Vagrant
 ```sql
 $ Vagrant up
