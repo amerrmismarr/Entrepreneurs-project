@@ -151,7 +151,7 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
-# JSON APIs to view Century Information
+# JSON APIs 
 @app.route('/century/<int:century_id>/list/JSON')
 def CenturiessJSON(century_id):
     century = session.query(Century).filter_by(id=century_id).one()
@@ -234,7 +234,7 @@ def editEntrepreneur(century_id, list_id):
         return render_template('editentrepreneur.html', century_id=century_id, list_id=list_id, entrepreneur=editedEntrepreneur)
 
 
-# Delete a menu item
+# Delete an entrepreneur
 @app.route('/century/<int:century_id>/list/<int:list_id>/delete', methods=['GET', 'POST'])
 def deleteEntrepreneur(century_id, list_id):
 
