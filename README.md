@@ -1,4 +1,4 @@
-**Item Catalogue Project**
+**Entrepreneurs Project**
 
 This project is part of Udacity's Full Stack Web Developer Nanodegree program. It creates a list of centuries and a list of famous entrepreneurs and information about each entrepreneur in each century where uers can add, edit/update and delete entrepreneurs' information. 
 
