@@ -16,7 +16,8 @@ import requests
 
 app = Flask(__name__)
 
-CLIENT_ID = json.loads(open('client_secrets.json', 'r').read())['web']['client_id']
+CLIENT_ID = json.loads(
+        open('client_secrets.json', 'r').read())['web']['client_id']
 
 # Connect to Database and create database session
 
@@ -29,7 +30,9 @@ session = DBSession()
 
 @app.route('/login')
 def showLogin():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
+    state = ''.join(
+        random.choice(
+            string.ascii_uppercase + string.digits) for x in xrange(32))
     login_session['state'] = state
     return render_template('login.html', STATE=state)
 
@@ -85,8 +88,8 @@ def gconnect():
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
-                                 200)
+        response = make_response(
+            json.dumps('Current user is already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -116,7 +119,8 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ''' " style = "width: 300px; height: 300px;border-radius:
+    150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '''
     print "done!"
     return output
 
@@ -126,13 +130,14 @@ def gdisconnect():
     access_token = login_session.get('access_token')
     if access_token is None:
         print 'Access Token is None'
-        response = make_response(json.dumps('Current user not connected.'), 401)
+        response = make_response(
+            json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     print 'In gdisconnect access token is %s', access_token
     print 'User name is: '
     print login_session['username']
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print 'result is '
@@ -147,7 +152,8 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
     else:
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response = make_response(
+            json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -155,7 +161,8 @@ def gdisconnect():
 @app.route('/century/<int:century_id>/list/JSON')
 def CenturiessJSON(century_id):
     century = session.query(Century).filter_by(id=century_id).one()
-    entrepreneurs = session.query(Entrepreneur).filter_by(century_id=century_id).all()
+    entrepreneurs = session.query(Entrepreneur)\
+        .filter_by(century_id=century_id).all()
     return jsonify(Entrepreneurs=[e.serialize for e in entrepreneurs])
 
 
@@ -185,8 +192,11 @@ def showCenturies():
 @app.route('/century/<int:century_id>/list/')
 def showList(century_id):
     century = session.query(Century).filter_by(id=century_id).one()
-    entrepreneurs = session.query(Entrepreneur).filter_by(century_id=century_id).all()
-    return render_template('entrepreneurs.html', entrepreneurs=entrepreneurs, century=century)
+    entrepreneurs = session.query(Entrepreneur)\
+        .filter_by(century_id=century_id).all()
+    return render_template('entrepreneurs.html',
+                           entrepreneurs=entrepreneurs,
+                           century=century)
 
 
 # Create a new entrepreneur
@@ -197,7 +207,11 @@ def newEntrepreneur(century_id):
 
     century = session.query(Century).filter_by(id=century_id).one()
     if request.method == 'POST':
-        newEntrepreneur = Entrepreneur(name=request.form['name'], information=request.form['information'], century_id=century_id, user_id=century.user_id)
+        newEntrepreneur = Entrepreneur(
+            name=request.form['name'],
+            information=request.form['information'],
+            century_id=century_id,
+            user_id=login_session['user_id'])
         session.add(newEntrepreneur)
         session.commit()
         return redirect(url_for('showList', century_id=century_id))
@@ -209,19 +223,26 @@ def newEntrepreneur(century_id):
 def showInformation(century_id, list_id):
     entrepreneur = session.query(Entrepreneur).filter_by(id=list_id).one()
     century = session.query(Century).filter_by(id=century_id).one()
-    entrepreneurs = session.query(Entrepreneur).filter_by(century_id=century_id).all()
-    return render_template('information.html', century_id=century_id, list_id=list_id, entrepreneur=entrepreneur)
+    entrepreneurs = session.query(Entrepreneur)\
+        .filter_by(century_id=century_id).all()
+    return render_template('information.html',
+                           century_id=century_id, list_id=list_id,
+                           entrepreneur=entrepreneur)
 
 
 # Edit an entrepreneur
-@app.route('/century/<int:century_id>/list/<int:list_id>/edit', methods=['GET', 'POST'])
+@app.route('/century/<int:century_id>/list/<int:list_id>/edit',
+           methods=['GET', 'POST'])
 def editEntrepreneur(century_id, list_id):
 
     if 'username' not in login_session:
         return redirect('/login')
 
-    editedEntrepreneur = session.query(Entrepreneur).filter_by(id=list_id).one()
+    editedEntrepreneur = session.query(Entrepreneur)\
+        .filter_by(id=list_id).one()
     century = session.query(Century).filter_by(id=century_id).one()
+    if editedEntrepreneur.user_id != login_session['user_id']:
+        return "<script>{alert('Unauthorized');}</script>"
     if request.method == 'POST':
         if request.form['name']:
             editedEntrepreneur.name = request.form['name']
@@ -231,24 +252,31 @@ def editEntrepreneur(century_id, list_id):
         session.commit()
         return redirect(url_for('showList', century_id=century_id))
     else:
-        return render_template('editentrepreneur.html', century_id=century_id, list_id=list_id, entrepreneur=editedEntrepreneur)
+        return render_template('editentrepreneur.html',
+                               century_id=century_id, list_id=list_id,
+                               entrepreneur=editedEntrepreneur)
 
 
 # Delete an entrepreneur
-@app.route('/century/<int:century_id>/list/<int:list_id>/delete', methods=['GET', 'POST'])
+@app.route('/century/<int:century_id>/list/<int:list_id>/delete',
+           methods=['GET', 'POST'])
 def deleteEntrepreneur(century_id, list_id):
 
     if 'username' not in login_session:
         return redirect('/login')
 
     century = session.query(Century).filter_by(id=century_id).one()
-    entrepreneurToDelete = session.query(Entrepreneur).filter_by(id=list_id).one()
+    entrepreneurToDelete = session.query(Entrepreneur)\
+        .filter_by(id=list_id).one()
+    if entrepreneurToDelete.user_id != login_session['user_id']:
+        return "<script>{alert('Unauthorized');}</script>"
     if request.method == 'POST':
         session.delete(entrepreneurToDelete)
         session.commit()
         return redirect(url_for('showList', century_id=century_id))
     else:
-        return render_template('deleteentrepreneur.html', entrepreneur=entrepreneurToDelete)
+        return render_template('deleteentrepreneur.html',
+                               entrepreneur=entrepreneurToDelete)
 
 
 def createUser(login_session):
